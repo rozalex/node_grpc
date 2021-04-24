@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package priorityconnect.license.v1;
+
+message LicenseEntry {
+  string key = 1;
+  string value = 2;
+}
+
+message LicenseData {
+  repeated LicenseEntry data = 1;
+  string rawData = 2;
+}
+
+message LicenseResult { bool result = 1; }
+
+message ModuleCheckResult {
+  enum CheckResult {
+    VALID = 0;
+    INVALID = 1;
+    EXPIRED = 2;
+  }
+  CheckResult checkResult = 1;
+}
+
+message ModuleCheckRequest {
+  string licenseID = 1;
+  int64 moduleID = 2;
+}
+
+message AsapiCheckRequest {
+  string licenseID = 1;
+  string AsapiName = 2;
+}
+
+message LicenseEntryRequest {
+  string licenseID = 1;
+  string key = 2;
+}
+
+message LicenseEntryResponse {
+  LicenseEntry entry = 1;
+  bool found = 3;
+}
+
+service Licenses {
+  rpc ExtWriteLicense(LicenseData) returns (LicenseResult) {};
+  rpc ModuleValid(ModuleCheckRequest) returns (ModuleCheckResult) {};
+  rpc AssapiValid(AsapiCheckRequest) returns (ModuleCheckResult) {};
+  rpc LicenseEntryByKey(LicenseEntryRequest) returns (LicenseEntryResponse) {};
+}

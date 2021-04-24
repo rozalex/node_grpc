@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: priority-attendance
+  namespace: default
+  name: priority-attendance
+spec:
+  selector:
+    matchLabels:
+      app: priority-attendance
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: priority-attendance
+    spec:
+      nodeSelector:
+        os: linux
+      containers:
+      - env:
+        - name: ISSUER_HOST
+          value: dk8s.priority-software.com
+        image: regdk8s.priority-software.com/priority-attendance:latest
+        name: priority-attendance
+        ports:
+        - containerPort: 8000

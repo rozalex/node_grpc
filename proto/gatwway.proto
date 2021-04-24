@@ -1,0 +1,231 @@
+syntax = "proto3";
+
+option go_package = "./priorityconnect_gateway_v1";
+package priorityconnect.gateway.v1;
+
+message Header
+{
+    string key = 1;
+    string value = 2;
+}
+
+message HTTPRequest
+{
+    enum RequestType
+    {
+        PASS_THRU = 0;  // Client will not add anything  to the request
+        WEB_SDK = 1;    // Client will add WEB_SDK specific data
+        REST_API = 2;   // Client will add REST_API specific data
+        SEAMLESS = 3;
+    }
+
+    string tenantID = 1;
+    RequestType request_type = 2;
+    string method = 3;
+    string url = 4;
+    repeated Header headers = 5;
+    bytes body = 6;
+    string userlogin = 7;
+}
+
+message HTTPResponse
+{
+    int32 Code = 1;
+    repeated Header headers = 2;
+    bytes body = 3;
+}
+
+message AttachmentRequest
+{
+    string tenantID = 1;
+    string parentForm = 2;
+    string fileName = 3;
+    string dname = 4;
+}
+
+message AttachmentResponse
+{
+    string fileName = 1;
+    bytes fileData = 2;
+}
+
+message Ping {}
+message Pong {}
+
+message AuthUserRequest
+{
+    enum AuthActionType
+    {
+        FindUser = 0;
+        ValidateUser = 1;
+        ProvisionUser = 2;
+    }
+
+    string tenantID = 1;
+    AuthActionType action = 2;
+    int64 uid = 3;
+    string sub = 4;
+    string login = 5;
+    string password = 6;
+    string email = 7;
+    string fullName = 8;
+}
+
+message AuthUserResponse
+{
+    bool success = 1;
+    string message = 2;
+
+    bool active = 3;
+    int64 employeeId = 4;
+    int64 uid = 5;
+    string apiLogin = 6;
+    string firstName = 7;
+    string lastName = 8;
+    string fullName = 9;
+    string sub = 10;
+    string login = 11;
+    string email = 12;
+}
+
+message AuthProviderRequest
+{
+    enum AuthActionType
+    {
+        FindClient = 0;
+        GetProvider = 1;
+    }
+
+    string tenantID = 1;
+    AuthActionType action = 2;
+    string clientID = 3;
+}
+
+message AuthProviderResponse
+{
+    bool success = 1;
+    string message =2;
+    string clientName = 3;
+    string clientId = 4;
+    string clientSecret = 5;
+    repeated string clientURLs = 6;
+    bool externalOnly = 7;
+    bool autoProvisioning = 8;
+    int64 defaultGroup = 9;
+}
+
+message TextMessageRequest
+{
+    enum EntityType
+    {
+        Procedure = 0;
+        Compiled = 1;
+        Form = 2;
+    }
+    string tenantID = 1;
+    string entityName = 2;
+    EntityType eType = 3;
+    int64 from = 4;
+    int64 to = 5;
+    int64 lang = 6;
+}
+
+message TextMessageResponse
+{
+    map<int64, string> msgs = 1;
+}
+
+message ExecuteCompiledRequest
+{
+    message ExecuteCompiledParam
+    {
+        enum ParamType
+        {
+            String = 0;
+            File = 1;
+            Output = 2;
+            EncryptedFile = 3;
+            BinaryFile = 4;
+            BinaryOutput = 5;
+        }
+        ParamType type = 1;
+        string value = 2;
+        bytes bvalue = 3;
+        string extension = 4;
+    }
+    string tenantID = 1;
+    string dname = 2;
+    bool anyCompany = 3;
+    int64 language = 4;
+    string compName = 5;
+    repeated ExecuteCompiledParam params = 6;
+}
+  
+message ExecuteCompiledResponse
+{
+    message ExecuteCompiledParam
+    {
+        enum ParamType
+        {
+            String = 0;
+            File = 1;
+            Output = 2;
+            EncryptedFile = 3;
+            BinaryFile = 4;
+            BinaryOutput = 5;
+        }
+        ParamType type = 1;
+        string value = 2;
+        bytes bvalue = 3;
+        string extension = 4;
+    }
+    bool result = 1;
+    string message = 2;
+    repeated ExecuteCompiledParam params = 3;
+}
+
+message Gateway2Customer
+{
+    string ID = 1;
+    string tabulaini = 2;
+
+    oneof innerMessage
+    {
+        Ping ping = 3;
+        HTTPRequest http = 4;
+        AttachmentRequest attachment = 5;
+        AuthUserRequest authUser = 6;
+        AuthProviderRequest authProvider = 7;
+        TextMessageRequest msg = 8;
+        ExecuteCompiledRequest exec = 9;
+    }
+}
+
+message Customer2Gateway
+{
+    string ID = 1;
+    string error = 9;
+
+    oneof innerMessage
+    {
+        Pong pong = 2;
+        HTTPResponse http = 3;
+        AttachmentResponse attachment = 4;
+        AuthUserResponse authUser = 5;
+        AuthProviderResponse authProvider = 6;
+        TextMessageResponse msg = 7;
+        ExecuteCompiledResponse exec = 8;
+    }
+}
+
+// Following service is implemented by the GatewayService
+service Gateway
+{
+    rpc ExtCustomerStream(stream Customer2Gateway) returns (stream Gateway2Customer) {};
+    rpc HttpRequest(HTTPRequest) returns (HTTPResponse) {};
+    rpc Attachment(AttachmentRequest) returns (AttachmentResponse) {};
+    rpc AuthUser(AuthUserRequest) returns (AuthUserResponse) {};
+    rpc AuthProvider(AuthProviderRequest) returns (AuthProviderResponse) {};
+    rpc TextMessages(TextMessageRequest) returns (TextMessageResponse) {};
+    rpc ExecuteCompiled(ExecuteCompiledRequest) returns (ExecuteCompiledResponse) {};
+}

@@ -1,0 +1,248 @@
+syntax = "proto3";
+
+package priorityconnect.customers.v1;
+//option go_package = "tfs2013.priority-software.com/priority_git/devel/_git/go_customers.git/priorityconnect_customers_v1";
+option go_package = "../priorityconnect_customers_v1";
+message String
+{
+    string value = 1;
+}
+
+message Strings
+{
+    repeated string values = 1;
+}
+
+message Bool
+{
+    bool result = 1;
+}
+
+message TenantData
+{
+    string licenseID = 1;
+    string tenantID = 2;
+    string tabini = 3;
+    string wcf = 4;
+    string server = 5;
+    string dname = 6;
+    bool hosting = 7;
+    bool inactive = 8;
+    float version = 9;
+    int64 basicLanguage = 10;
+    string webclient = 11;
+    bool externalOnly = 12;
+    int64 admode = 13;
+    string defaultPrettyName = 14;
+    string locktype = 15;
+    bool tsdisabled = 16;
+}
+
+message CompanyData
+{
+    string dname = 1;
+    string name = 2;
+    string compid = 3;
+}
+
+message UserDataRequest
+{
+    string tenantID = 1;
+    string subject = 2;
+}
+
+message ContactDataRequest
+{
+    string tenantID = 1;
+    string subject = 2;
+    string dname = 3;
+}
+
+message UserData
+{
+    string email = 1;
+    string userlogin = 2;
+    string restlogin = 3;
+    int64 userId = 4;
+    int64 employeeID = 7;
+    string subject = 5;
+    bool active = 6;
+    string name = 8;
+}
+
+message UserDataList
+{
+    repeated UserData accountsList = 1;
+}
+
+message ContactData
+{
+    string email = 1;
+    string name = 2;
+    int64 id = 3;
+    bool active = 4;
+    string dname = 5;
+}
+
+message EmployeeData
+{
+    string email = 1;
+    int64 userId = 2;
+    int64 employeeID = 3;
+    string subject = 4;
+    bool active = 5;
+    string name = 6;
+}
+
+message EmailConfirmedResponse
+{
+    string subject = 1;
+    string challenge = 2;
+    int64 lang = 3;
+}
+
+message InternalAccountData
+{
+    string email = 1;
+    string password = 2;
+    string challenge = 3;
+}
+
+message LoginInternalData
+{
+    string email = 1;
+    string password = 2;
+}
+
+message LoginExternalData
+{
+    enum IndentityProvider 
+    {
+        Priority = 0;
+        Google = 1;
+        Microsoft = 2;
+        External = 3;
+    }
+    string email = 1;
+    IndentityProvider idp = 2;
+}
+
+message ResetPasswordData
+{
+    string guid = 1;
+    string newpassword = 2;
+}
+
+message ResetContext
+{
+    string email = 1;
+    string challenge = 2;
+    int64 lang = 3;
+}
+
+message OidcData
+{
+    string name = 1;
+    string id = 2;
+    string secret = 3;
+    string url = 4;
+    bool externalOnly = 5;
+}
+
+message KeyRequest
+{
+    string licenseID = 1;
+    string keyData = 2;
+}
+
+service Customers {
+    // companies and nice names
+    rpc ExtWriteCompany(CompanyData) returns (Bool) {};
+    rpc ExtDeleteCompany(CompanyData) returns (Bool) {};
+    rpc ReadCompaniesByTenantID(String) returns (stream CompanyData) {};
+
+    // accounts related calls
+
+    // ExtWriteEmployee sends emoployee data from Priority to connect and stores it in employees table.
+    rpc ExtWriteEmployee(EmployeeData) returns (String) {};
+
+    // ExtWriteUser sends user data from Priority to connect and stores it in users table.
+    rpc ExtWriteUser(UserData) returns (String) {};
+    rpc ExtWriteUsers(UserDataList) returns (Strings) {};
+    rpc ExtWriteContact(ContactData) returns (String) {};
+    rpc ExtReadUserBySubject(UserDataRequest) returns (UserData);
+    rpc ExtReadContactBySubject(ContactDataRequest) returns (ContactData);
+    rpc ReadAccountByEmail(String) returns (String) {};
+    rpc ReadUserBySubject(UserDataRequest) returns (UserData);
+    rpc ReadContactBySubject(ContactDataRequest) returns (ContactData);
+
+    // tenants
+    rpc ExtWritePublicKey(KeyRequest) returns (String) {};
+    rpc ReadPublicKey(KeyRequest) returns (String) {};
+    rpc ExtWriteTenant(TenantData) returns (Bool) {};
+    rpc ExtReadTenantById(String) returns (TenantData) {};
+    rpc WriteTenant(TenantData) returns (Bool) {};
+    rpc ReadTenantById(String) returns (TenantData) {};
+    rpc ReadTenantByName(String) returns (TenantData) {};
+    rpc ReadTenantByTabulaini(String) returns (TenantData) {};
+    rpc ReadTenantsBySubject(String) returns (stream TenantData) {};
+    rpc UpdateVersion(TenantData) returns (Bool) {};
+
+     // email confirmations
+     // AccountEmailConfirmed gets guid for confirme
+     // returns the subject and challenge-id when confirmeion was successful
+     // otherwise return string empty
+     rpc AccountEmailConfirmed(String) returns (EmailConfirmedResponse) {};
+
+     //accounts
+
+    // Register an Internal Account:
+    // receives email, password, and redirectURL for after confirmed
+    // if account is exists and intverified flag is TRUE - return FALSE
+    // otherwise create account and call AccountEmailConfirm function and return TRUEs
+    rpc NewAccountInternal(InternalAccountData) returns (Bool) {};
+
+    // Login by Internal account:
+    // receives email, password - and return subject if password correct and intverified flag is TRUE
+    // otherwise return string empty
+     rpc LoginInternal(LoginInternalData) returns (String) {};
+
+    // Login by External account:
+    // receives email, identity provider and return the subject 
+    // When the account does not exists - creates it
+    //(and update the extverified flag to TRUE)
+     rpc LoginExternal(LoginExternalData) returns (String) {};
+
+    // Send reset password:
+    // receives emailchallenge, language) - sending email withe GUID for reset account password
+    // return TRUE if account exsits and confirmed and email sended
+    rpc SendResetPassword(ResetContext) returns (Bool) {};
+
+    // Reset password:
+    // receives guid and new password 
+    // return the subject if guid exsits and not expried
+    // otherwise return string empty
+    rpc ResetPassword(ResetPasswordData) returns (EmailConfirmedResponse) {};
+
+    // Get reset context by guid:
+    // receives guid 
+    // return context if guid exsits and not expried
+    // otherwise return context with challenge empty
+    rpc GetResetContext(String) returns (ResetContext);
+    
+    // Register oidc definitions
+    // receives name, id, secret, redirectURL and externalOnly flag
+    // return False if tenant not exsits
+    rpc ExtWriteOidcDefs(OidcData) returns (Bool) {};
+
+    // read oidc definitions by name
+    // receives pretty name
+    // return oidc definitions if exsits
+    // otherwise return error with string  
+    rpc ReadOidcDefsByName(String) returns (OidcData) {};
+
+    // create url with bearer token for tenante in hosting cloud by tabula
+    // receives tenantId for target tenante
+    // return berrar token
+    rpc ExtCloudTabulaAuthURL(String) returns (String) {};
+}
