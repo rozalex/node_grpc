@@ -1,0 +1,523 @@
+swagger: '2.0'
+info:
+    description: 'This is a sample server Petstore server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).  For this sample, you can use the api key `special-key` to test the authorization filters.'
+    version: 1.0.0
+    title: Attendance APP
+    termsOfService: 'http://swagger.io/terms/'
+    contact:
+        email: apiteam@swagger.io
+    license:
+        name: Apache 2.0
+        url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: dk8s.priority-software.com
+basePath: /attendance/api/devel/3/
+tags:
+    - name: app
+      description: general app funcrions
+schemes:
+    - https
+    - http
+paths:
+    /settings:
+        get:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: return the settings
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        type: object
+                        properties:
+                            languages:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: string
+                                        language:
+                                            type: string
+                            messages:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: string
+                                        message:
+                                            type: string
+
+    /userInfo:
+        get:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: return the user's info
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        type: object
+                        properties:
+                            userName:
+                                type: string
+                            profilePicture:
+                                type: object
+                                properties:
+                                    data:
+                                        type: string
+                                    type:
+                                        type: string
+                            isGPSReqiured:
+                                type: boolean
+    /attendanceTime:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: return the start hour of the current day
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          date:
+                              type: string
+                              format: yyyy-mm-dd
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        type: object
+                        properties:
+                            totalTime:
+                                type: number
+                            fromTime:
+                                type: string
+    /dailyAttendance:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: return the start hour of the current day
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          date:
+                              type: string
+                              format: yyyy-mm-dd
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        type: object
+                        properties:
+                            FROMTIME:
+                                type: string
+                            TOTIME:
+                                type: string
+                            SALARYCODEDES:
+                                type: string
+                            DETAILS:
+                                type: string
+    /summarySums:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: returns the attendance sum for last 3 months
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          date:
+                              type: string
+                              format: yyyy-mm-dd
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                WORKHOURS:
+                                    type: number
+    /monthSummary:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: returns the monthly summary report according to the date
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          date:
+                              type: string
+                              format: yyyy-mm-dd
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        $ref: '#/definitions/MonthSummary'
+    /clockIn:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: run the clockIn procedure
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          time:
+                              type: string
+                          locationX:
+                              type: string
+                          locationY:
+                              type: string
+                          locationAddress:
+                              type: string
+            responses:
+                '200':
+                    description: success
+    /clockOut:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: run the clockOut procedure
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          time:
+                              type: string
+            responses:
+                '200':
+                    description: success
+    /workHours:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: create new report hours entry
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          date:
+                              type: string
+                          fromHour:
+                              type: string
+                          toHour:
+                              type: string
+                          reason:
+                              type: string
+                          details:
+                              type: string
+            responses:
+                '200':
+                    description: success
+        put:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: update report hours entry
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          id:
+                              type: string
+                          date:
+                              type: string
+                          fromHour:
+                              type: string
+                          toHour:
+                              type: string
+                          reason:
+                              type: string
+                          details:
+                              type: string
+            responses:
+                '200':
+                    description: success
+        delete:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: delete report hours entry
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          id:
+                              type: string
+            responses:
+                '200':
+                    description: success
+    /absenceReport:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: create report absence entry
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          fromDate:
+                              type: string
+                          toDate:
+                              type: string
+                          reason:
+                              type: string
+                          details:
+                              type: string
+            responses:
+                '200':
+                    description: success
+        put:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: update report absence entry
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          id:
+                              type: string
+                          fromDate:
+                              type: string
+                          toDate:
+                              type: string
+                          reason:
+                              type: string
+                          details:
+                              type: string
+            responses:
+                '200':
+                    description: success
+        delete:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: delete report absence entry
+            parameters:
+                - in: body
+                  name: body
+                  required: true
+                  schema:
+                      type: object
+                      properties:
+                          id:
+                              type: string
+            responses:
+                '200':
+                    description: success
+    /absenceReportAttachments:
+        get:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: return a list of report hours attachments
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                data:
+                                    type: string
+                                type:
+                                    type: string
+    /absenceReportUploadAttach:
+        post:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: upload a new attachment to report absence
+            parameters:
+                - in: body
+                  name: body
+                  schema:
+                      type: object
+                      properties:
+                          id:
+                              type: string
+                          data:
+                              type: string
+                          type:
+                              type: string
+            responses:
+                '200':
+                    description: success
+    /workHoursCodeChooseList:
+        get:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: return a list of the report codes
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                code:
+                                    type: string
+                                desc:
+                                    type: string
+    /apsentCodeChooseList:
+        get:
+            tags:
+                - app
+            produces:
+                - application/json
+            consumes:
+                - application/json
+            description: return a list of the report codes
+            responses:
+                '200':
+                    description: success
+                    schema:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                code:
+                                    type: string
+                                desc:
+                                    type: string
+definitions:
+    ApiResponse:
+        type: object
+        properties:
+            code:
+                type: integer
+                format: int32
+            type:
+                type: string
+            message:
+                type: string
+    MonthSummary:
+        type: object
+        properties:
+            date:
+                type: string
+            workHours:
+                type: string
+            days:
+                type: array
+                items:
+                    $ref: '#/definitions/ReportHour'
+    ReportHour:
+        type: object
+        properties:
+            EDATE:
+                type: string
+            SALARYCODENAME:
+                type: string
+            SALARYCODEDES:
+                type: string
+            HOURS:
+                type: number
+            FROMTIME:
+                type: string
+            TOTIME:
+                type: string
+            FROMTIME2:
+                type: string

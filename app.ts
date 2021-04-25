@@ -1,6 +1,6 @@
 import express, {Application, Request, Response} from 'express';
 import {logger, validator, authenticator, error} from './src/middleware';
-import {settings} from './src/routes';
+import {work, settings, user} from './src/routes';
 
 const app: Application = express();
 
@@ -15,7 +15,8 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use(settings);
-
+app.use(user);
+app.use(work);
 
 /** Rules of our API */
 app.use((req: Request, res: Response, next) => {
@@ -33,4 +34,7 @@ app.use((req: Request, res: Response, next) => {
     next();
 });
 
+app.get('/app*', (req: Request, res: Response) => {
+    res.sendFile('index.html', {root: './'});
+});
 export default app;
